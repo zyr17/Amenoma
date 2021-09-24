@@ -21,6 +21,9 @@ class GameInfo:
         self.art_height = 203.21 * self.scale_ratio
         self.art_expand = 6 * self.scale_ratio
 
+        self.art_lock = 33.33 * self.scale_ratio
+        self.art_lock_color = [255, 138, 117]
+
         self.art_gap_x = 30.89 * self.scale_ratio
         self.art_gap_y = 30.35 * self.scale_ratio
 
@@ -89,6 +92,18 @@ class ArtScannerLogic:
         art_center_y = self.game_info.first_art_y + (
                 self.game_info.art_height + self.game_info.art_gap_y) * row + self.game_info.art_height / 5
         return art_center_x, art_center_y
+    
+    def captureLock(self, x, y):
+        top = x - self.game_info.art_width / 2
+        left = y - self.game_info.art_height / 2
+        return captureWindow(
+            self.game_info.hwnd, 
+            (top, left, top + self.game_info.art_lock, left + self.game_info.art_lock))
+
+    def detect_lock(self, lock_img):
+        lock_img = lock_img.numpy()
+        lock_img = lock_img[:, :, 3]
+        
 
     def scanRows(self, rows, callback):
         '''
@@ -110,6 +125,7 @@ class ArtScannerLogic:
                         self.game_info.art_info_top,
                         self.game_info.art_info_left + self.game_info.art_info_width,
                         self.game_info.art_info_top + self.game_info.art_info_height))
+                    lock_img = self.captureLock(art_center_x, art_center_y)
                     if art_col == self.game_info.art_cols - 1:
                         art_row += 1
                         art_col = 0

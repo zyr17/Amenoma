@@ -602,7 +602,7 @@ class Worker(QObject):
                     with open(f"artifacts/fail_{self.art_id}.json", "wb") as f:
                         f.write(s.encode('utf-8'))
 
-        def artscannerCallback(art_img):
+        def artscannerCallback(art_img, is_lock):
             detectedInfo = self.model.detect_info(art_img)
             artFilter(detectedInfo, art_img)
             self.log(f"已扫描{self.art_id}个圣遗物，已保存{self.saved}个，已跳过{self.skipped}个")

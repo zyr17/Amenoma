@@ -1,7 +1,4 @@
 name: ArtScanner
-channels:
-  - conda-forge
-  - defaults
 dependencies:
   - _tflow_select=2.3.0=gpu
   - absl-py=0.12.0=pyhd8ed1ab_0
@@ -179,4 +176,4 @@ dependencies:
     - wcwidth==0.2.5
     - webencodings==0.5.1
     - widgetsnbextension==3.5.1
-prefix: D:\anaconda\envs\ArtScanner
+prefix: C:\anaconda\envs\ArtScanner

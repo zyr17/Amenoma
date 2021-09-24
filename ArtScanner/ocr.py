@@ -33,6 +33,7 @@ class Config:
     subattr_2_coords = [67, 532, 560, 572]
     subattr_3_coords = [67, 584, 560, 624]
     subattr_4_coords = [67, 636, 560, 676]
+    lock_coords = [0, 0, 999, 999]  # TODO
 
 
 class OCR:
@@ -77,7 +78,11 @@ class OCR:
             for key in sorted(info.keys())], axis=0)
         y = self.model.predict(x)
         y = self.decode(y)
-        return {**{key: v for key, v in zip(sorted(info.keys()), y)}, **{'star': self.detect_star(art_img)}}
+        return {
+            **{key: v for key, v in zip(sorted(info.keys()), y)}, 
+            **{'star': self.detect_star(art_img)}, 
+            **{'lock': self.detect_lock(art_img)}
+        }
 
     def extract_art_info(self, art_img):
         name = art_img.crop([i * self.scale_ratio for i in Config.name_coords])
@@ -111,6 +116,10 @@ class OCR:
         coef = cropped_star.shape[1] / cropped_star.shape[0]
         coef = coef / 1.30882352 + 0.21568627
         return int(round(coef))
+
+    def detect_lock(self, art_img):
+        raise NotImplementedError  # TODO
+        lock_img = art_img.crop([i * self.scale_ratio for i in Config.lock_coords])
 
     def to_gray(self, text_img):
         text_img = np.array(text_img)

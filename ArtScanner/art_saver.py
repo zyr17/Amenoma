@@ -110,6 +110,7 @@ class Artifact(persistent.Persistent):
                 'main_attr_name': str, name of main stat
                 'main_attr_value': str/int/float, main stat value, example: '38.5%', '4,760', 144
                 'subattr_{i}': str, substat description, i could be 1-4, example: '暴击率+3.5%', '攻击力+130'
+                'lock': bool, whether the artifact is locked
             image: PIL.Image, screenshot of the artifact, will be shrinked to 300x512 to save space
         '''
 
@@ -125,6 +126,7 @@ class Artifact(persistent.Persistent):
             rarity=self.rarity, level=self.level, isMain=True)
         self.substats = [ArtifactStat(*info[tag].split('+'))
                          for tag in sorted(info.keys()) if "subattr_" in tag]
+        self.lock = info['lock']
         if image is not None:
             self.image = image.resize((300, 512))
         assert self.is_valid(), "Artifact attributes are not valid"
@@ -292,6 +294,9 @@ class ArtDatabase:
         s = json.dumps(result, ensure_ascii=False)
         f.write(s.encode('utf-8'))
         f.close()
+    
+    def exportCocogoatJSON(self, path):
+        raise NotImplementedError  # TODO
 
 
 if __name__ == '__main__':
@@ -306,7 +311,8 @@ if __name__ == '__main__':
         "subattr_2": "暴击率+7.4%",
         "subattr_3": "防御力+63",
         "subattr_4": "暴击伤害+6.2%",
+        "lock": True,
     }, None)
     art2 = Artifact({"level": "+20", "main_attr_name": "生命值", "main_attr_value": "4,780", "name": "野花记忆的绿野",
                      "subattr_1": "元素充能效率+4.5%", "subattr_2": "攻击力+15.7%", "subattr_3": "暴击伤害+14.0%",
-                     "subattr_4": "元素精通+42", "type": "生之花", "star": 5}, None)
+                     "subattr_4": "元素精通+42", "type": "生之花", "star": 5, "lock": False}, None)
