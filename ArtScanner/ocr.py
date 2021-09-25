@@ -33,7 +33,9 @@ class Config:
     subattr_2_coords = [67, 532, 560, 572]
     subattr_3_coords = [67, 584, 560, 624]
     subattr_4_coords = [67, 636, 560, 676]
-    lock_coords = [0, 0, 999, 999]  # TODO
+    lock_coords = [572, 405, 617, 450]
+    lock_color = [255, 138, 117]
+    lock_threshold = 5
 
 
 class OCR:
@@ -118,8 +120,10 @@ class OCR:
         return int(round(coef))
 
     def detect_lock(self, art_img):
-        raise NotImplementedError  # TODO
         lock_img = art_img.crop([i * self.scale_ratio for i in Config.lock_coords])
+        lock_img = np.array(lock_img)
+        is_lock = ((lock_img[:, :, :3] == Config.lock_color).sum(2) == 3).sum().item()
+        return is_lock > Config.lock_threshold
 
     def to_gray(self, text_img):
         text_img = np.array(text_img)

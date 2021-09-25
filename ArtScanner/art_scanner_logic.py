@@ -23,6 +23,10 @@ class GameInfo:
 
         self.art_lock = 33.33 * self.scale_ratio
         self.art_lock_color = [255, 138, 117]
+        self.art_lock_threshold = 5
+
+        self.panel_lock_x = 2312 * self.scale_ratio
+        self.panel_lock_y = 588 * self.scale_ratio
 
         self.art_gap_x = 30.89 * self.scale_ratio
         self.art_gap_y = 30.35 * self.scale_ratio
@@ -94,16 +98,26 @@ class ArtScannerLogic:
         return art_center_x, art_center_y
     
     def captureLock(self, x, y):
-        top = x - self.game_info.art_width / 2
-        left = y - self.game_info.art_height / 2
+        left = x - self.game_info.art_width / 2 - self.game_info.art_expand
+        top = y - self.game_info.art_height / 5 - self.game_info.art_expand
         return captureWindow(
             self.game_info.hwnd, 
-            (top, left, top + self.game_info.art_lock, left + self.game_info.art_lock))
+            (left, top, left + self.game_info.art_lock, top + self.game_info.art_lock))
 
-    def detect_lock(self, lock_img):
-        lock_img = lock_img.numpy()
-        lock_img = lock_img[:, :, 3]
-        
+    def detectLock(self, lock_img):
+        lock_img = np.array(lock_img)
+        lock_img = lock_img[:, :, :3]
+        is_lock = ((lock_img == self.game_info.art_lock_color).sum(2) == 3).sum().item()
+        return is_lock > self.game_info.art_lock_threshold
+    
+    def clickLock(self, delay = 0.1, callback = None):
+        """click artifact lock. delay `delay`ms after click.
+        """
+        mouse.move(self.game_info.left + self.game_info.panel_lock_x, self.game_info.top + self.game_info.panel_lock_y)
+        mouse.click()
+        time.sleep(delay)
+        if callback:
+            callback()
 
     def scanRows(self, rows, callback):
         '''
@@ -113,7 +127,8 @@ class ArtScannerLogic:
         if len(rows) < 1:
             return True
         art_center_x, art_center_y = self.getArtCenter(rows[0], 0)
-        mouse.move(self.game_info.left + art_center_x, self.game_info.top + art_center_y)
+        nowx, nowy = self.game_info.left + art_center_x, self.game_info.top + art_center_y
+        mouse.move(nowx, nowy)
         mouse.click()
         for art_row in rows:
             for art_col in range(self.game_info.art_cols):
@@ -126,16 +141,20 @@ class ArtScannerLogic:
                         self.game_info.art_info_left + self.game_info.art_info_width,
                         self.game_info.art_info_top + self.game_info.art_info_height))
                     lock_img = self.captureLock(art_center_x, art_center_y)
+                    is_locked = self.detectLock(lock_img)
                     if art_col == self.game_info.art_cols - 1:
                         art_row += 1
                         art_col = 0
                     else:
                         art_col += 1
+                    def click_lock():
+                        self.clickLock(callback = lambda:mouse.move(nowx, nowy))
+                    callback(art_img, is_locked, click_lock)
                     if art_row in rows:
                         art_center_x, art_center_y = self.getArtCenter(art_row, art_col)
-                        mouse.move(self.game_info.left + art_center_x, self.game_info.top + art_center_y)
+                        nowx, nowy = self.game_info.left + art_center_x, self.game_info.top + art_center_y
+                        mouse.move(nowx, nowy)
                         mouse.click()
-                    callback(art_img)
                 else:
                     return False
         return True

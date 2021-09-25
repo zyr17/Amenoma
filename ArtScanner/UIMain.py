@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QDialog, QMessageBox,
 import ocr
 import utils
 import ArtsInfo
-from art_saver import ArtDatabase
+from art_saver import ArtDatabase, Artifact
 from art_scanner_logic import ArtScannerLogic, GameInfo
 from rcc import About_Dialog
 from rcc import Help_Dialog
@@ -304,6 +304,9 @@ class UIMain(QMainWindow, Ui_MainWindow):
                      self.checkBox_3.isChecked(),
                      self.checkBox_2.isChecked(),
                      self.checkBox.isChecked()],
+            "lockOperation": ("GameToData" if self.radioButton_lock.isChecked() else
+                              "DataToGame" if self.radioButton_lock_2.isChecked() else
+                              "Unchanged"),
             "levelMin": self.spinBox.value(),
             "levelMax": self.spinBox_2.value(),
             "delay": self.doubleSpinBox.value(),
@@ -503,15 +506,17 @@ class Worker(QObject):
             self.endWorking.emit()
             return
         self.detectSettings = info
-        artifactDB = ArtDatabase()
+        export_name = ['artifacts.genshinart.json',
+                       'artifacts.genmocalc.json',
+                       'artifacts.GOOD.json',
+                       'artifacts.json']
+        artifactDB = ArtDatabase(export_name[-1])
         artScanner = ArtScannerLogic(self.game_info)
 
         exporter = [artifactDB.exportGenshinArtJSON,
                     artifactDB.exportGenmoCalcJSON,
-                    artifactDB.exportGOODJSON]
-        export_name = ['artifacts.genshinart.json',
-                       'artifacts.genmocalc.json',
-                       'artifacts.GOOD.json']
+                    artifactDB.exportGOODJSON,
+                    artifactDB.exportJSON]
 
         mouse.on_middle_click(artScanner.interrupt)
 
@@ -550,6 +555,7 @@ class Worker(QObject):
                     detected_info[tag] = utils.attr_auto_correct(info[0]) + "+" + info[1]
 
         def artFilter(detected_info, art_img):
+            artifact = None
             autoCorrect(detected_info)
 
             self.star_dist[detected_info['star'] - 1] += 1
@@ -568,19 +574,28 @@ class Worker(QObject):
                                  f" id: {self.art_id + 1} detected info: {detected_info}")
                 self.skipped += 1
                 status = 1
-            elif artifactDB.add(detected_info, art_img):
-                self.logger.info(f"[ArtifactDB] Saved a Artifact."
-                                 f" id: {self.art_id + 1} detected info: {detected_info}")
-                self.saved += 1
-                status = 2
-                self.star_dist_saved[detected_info['star'] - 1] += 1
             else:
-                self.logger.info(f"[ArtifactDB] Failed to save a Artifact."
-                                 f" id: {self.art_id + 1} detected info: {detected_info}")
-                status = 3
-                self.failed += 1
+                artifact = Artifact(detected_info, art_img)
+                result = artifactDB.add(artifact = artifact)
+                if result == 'exist':
+                    self.logger.info(f"[ArtifactDB] Existed Artifact."
+                                     f" id: {self.art_id + 1} detected info: {detected_info}")
+                    self.skipped += 1
+                    status = 1
+                elif result:
+                    self.logger.info(f"[ArtifactDB] Saved a Artifact."
+                                     f" id: {self.art_id + 1} detected info: {detected_info}")
+                    self.saved += 1
+                    status = 2
+                    self.star_dist_saved[detected_info['star'] - 1] += 1
+                else:
+                    self.logger.info(f"[ArtifactDB] Failed to save a Artifact."
+                                     f" id: {self.art_id + 1} detected info: {detected_info}")
+                    status = 3
+                    self.failed += 1
             self.art_id += 1
             saveImg(detected_info, art_img, status)
+            return artifact
 
         def saveImg(detected_info, art_img, status):
             if self.detectSettings['ExtraSettings']['ExportAllImages']:
@@ -602,9 +617,20 @@ class Worker(QObject):
                     with open(f"artifacts/fail_{self.art_id}.json", "wb") as f:
                         f.write(s.encode('utf-8'))
 
-        def artscannerCallback(art_img, is_lock):
+        def artscannerCallback(art_img, is_locked, click_lock):
             detectedInfo = self.model.detect_info(art_img)
-            artFilter(detectedInfo, art_img)
+            self.log(f'名称{detectedInfo["name"]} 小锁{is_locked} 大锁{detectedInfo["lock"]}')
+            detectedInfo['lock'] = is_locked
+            artifact = artFilter(detectedInfo, art_img)
+            if info['lockOperation'] == 'DataToGame':
+                if artifact and (artifactDB.dict[artifact].lock != is_locked):
+                    click_lock()
+            elif info['lockOperation'] == 'GameToData':
+                artifactDB.dict[artifact].lock = is_locked
+            elif info['lockOperation'] == 'Unchanged':
+                pass
+            else:
+                raise ValueError(f"Unknown lockOperation {info['lockOperation']}")
             self.log(f"已扫描{self.art_id}个圣遗物，已保存{self.saved}个，已跳过{self.skipped}个")
 
         try:
@@ -627,6 +653,7 @@ class Worker(QObject):
             self.error(repr(e))
             self.log('扫描出错，已停止')
 
+        exporter[-1](export_name[-1])  # always export artifact data to artifact.json, which can read by Amenoma and Cocogoat
         if self.saved != 0:
             if info['ExtraSettings']['ExportAllFormats']:
                 list(map(lambda exp, name: exp(name), exporter, export_name))

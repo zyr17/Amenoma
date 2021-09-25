@@ -1,4 +1,5 @@
 import json
+import time
 import os
 import sys
 from enum import IntEnum as Enum
@@ -100,7 +101,7 @@ class Artifact(persistent.Persistent):
                     i.get('Level', -1) == l + 1 and i.get('Rank', -1) == r], []) for r in range(1, 6)} for l in
         range(21)} for k in ArtsInfo.MainAttrNames.keys()}
 
-    def __init__(self, info, image):
+    def __init__(self, info = None, image = None):
         '''
             info: dict with keys:
                 'name': str, name of artifact
@@ -114,6 +115,10 @@ class Artifact(persistent.Persistent):
             image: PIL.Image, screenshot of the artifact, will be shrinked to 300x512 to save space
         '''
 
+        if info == None and image == None:
+            return
+        self.id = int(time.time() * 1000)
+        
         self.name = info['name']
 
         typeid = ArtsInfo.TypeNames.index(info['type'])
@@ -130,6 +135,69 @@ class Artifact(persistent.Persistent):
         if image is not None:
             self.image = image.resize((300, 512))
         assert self.is_valid(), "Artifact attributes are not valid"
+        assert self == self.from_json(self.to_json()), (self, self.to_json())
+
+    def __eq__(self, target):
+        """only check name, level, rarity, mainstats, substats.
+        """
+        hashsame = hash(self) == hash(target)
+        result = (
+            self.name == target.name
+            and self.level == target.level
+            and self.rarity == target.rarity
+            and self.stat == target.stat
+            and len(self.substats) == len(target.substats)
+        )
+        if not result:
+            assert not hashsame
+            return False
+        for sub1, sub2 in zip(self.substats, target.substats):
+            result = result and sub1 == sub2
+        assert hashsame == result
+        return result
+    
+    def __hash__(self):
+        hash_str = f'{self.name}|{self.level}|{self.rarity}|{self.stat}'
+        for sub in self.substats:
+            hash_str += f'|{sub}'
+        return hash(hash_str)
+    
+    @staticmethod
+    def from_json(data):
+        if isinstance(data, str):
+            data = json.loads(data)
+        artifact = Artifact()
+        artifact.id = data['id']
+        artifact.name = data['name']
+        artifact.setid = [i for i, v in enumerate(
+            ArtsInfo.ArtNames) if data['name'] in v][0]
+        artifact.type = [v.index(data['name']) for v in ArtsInfo.ArtNames if data['name'] in v][0]
+        artifact.level = data['level']
+        artifact.rarity = data['stars']
+        artifact.stat = ArtifactStat(data['main']['name'], data['main']['value'], artifact.rarity, artifact.level, True)
+        artifact.substats = []
+        for sub in data['sub']:
+            artifact.substats.append(ArtifactStat(sub['name'], sub['value']))
+        artifact.lock = data['lock']
+        assert artifact.is_valid(), "Artifact attributes are not valid"
+        return artifact
+    
+    def to_json(self):
+        def stat_to_dict(stat):
+            return {
+                'name': ArtsInfo.MainAttrNames[stat.type.name],
+                'value': ArtsInfo.Formats[stat.type.name].format(stat.value + 1e-5)
+            }
+        return json.dumps({
+            'id': self.id,
+            'name': self.name,
+            'level': self.level,
+            'stars': self.rarity,
+            'user': '',
+            'main': stat_to_dict(self.stat),
+            'sub': [stat_to_dict(x) for x in self.substats],
+            'lock': self.lock
+        }, ensure_ascii=False)
 
     def is_valid(self):
         if self.level > ArtsInfo.RarityToMaxLvs[self.rarity - 1]:
@@ -190,13 +258,23 @@ class ArtDatabase:
         self.conn = self.db.open()
         self.root = self.conn.root()
         self.root['size'] = 0
+        self.dict = {}
+        if path[-5:] == '.json' and os.path.exists(path):
+            data = json.load(open(path, encoding='utf8'))
+            for d in data:
+                self.add(artifact = Artifact.from_json(d))
 
     def __del__(self):
         self.db.close()
 
-    def add(self, info, art_img, raise_error=False):
+    def add(self, info=None, art_img=None, artifact=None, raise_error=False):
         try:
-            self.root[str(self.root['size'])] = Artifact(info, art_img)
+            if artifact is None:
+                artifact = Artifact(info, art_img)
+            if artifact in self.dict:
+                return 'exist'
+            self.dict[artifact] = artifact
+            self.root[str(self.root['size'])] = artifact
             self.root['size'] += 1
             transaction.commit()
             return True
@@ -204,6 +282,15 @@ class ArtDatabase:
             if raise_error:
                 raise
             return False
+    
+    def exportJSON(self, path):
+        result = []
+        for art_id in range(self.root['size']):
+            art: Artifact = self.root[str(art_id)]
+            result.append(art.to_json())
+        f = open(path, "w", encoding='utf8')
+        f.write(f'[{",".join(result)}]')
+        f.close()
 
     def exportGOODJSON(self, path):
         result = {
@@ -295,24 +382,24 @@ class ArtDatabase:
         f.write(s.encode('utf-8'))
         f.close()
     
-    def exportCocogoatJSON(self, path):
-        raise NotImplementedError  # TODO
-
 
 if __name__ == '__main__':
     art = Artifact({
-        "name": "沉波之盏",
+        "name": "绯花之壶",
         "type": "空之杯",
         "star": 5,
         "level": "+20",
-        "main_attr_name": "冰元素伤害加成",
+        "main_attr_name": "水元素伤害加成",
         "main_attr_value": "46.6%",
-        "subattr_1": "元素充能效率+18.1%",
-        "subattr_2": "暴击率+7.4%",
-        "subattr_3": "防御力+63",
-        "subattr_4": "暴击伤害+6.2%",
+        "subattr_1": "生命值+11.1%",
+        "subattr_2": "暴击伤害+21.0%",
+        "subattr_3": "攻击力+31",
+        "subattr_4": "暴击率+7.4%",
+        "setid": 33,
         "lock": True,
     }, None)
+    """
     art2 = Artifact({"level": "+20", "main_attr_name": "生命值", "main_attr_value": "4,780", "name": "野花记忆的绿野",
                      "subattr_1": "元素充能效率+4.5%", "subattr_2": "攻击力+15.7%", "subattr_3": "暴击伤害+14.0%",
                      "subattr_4": "元素精通+42", "type": "生之花", "star": 5, "lock": False}, None)
+    """
