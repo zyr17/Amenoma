@@ -644,6 +644,8 @@ class Worker(QObject):
                                                                              extra_scroll=int(
                                                                                  self.game_info.art_rows > 5),
                                                                              interval=self.detectSettings['delay'])
+                if start_row != 0:  # if last page, align to correct lock position
+                    artScanner.alignFirstRow()
                 if start_row == self.game_info.art_rows:
                     break
             if artScanner.stopped:
