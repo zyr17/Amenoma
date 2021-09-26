@@ -35,7 +35,7 @@ jobs:
           timezoneWindows: "China Standard Time"
       - name: Install Conda Environment
         run: |
-            conda env update -f ./ArtScanner/Tools/model_trainer/dev_env.yml --name base
+            conda env update -f ./ArtScanner/build_env_ui.yml --name base
             conda init powershell
       - name: Versions
         run: |
