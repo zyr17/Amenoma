@@ -9,16 +9,16 @@ jobs:
         include:
           - cmd: build_ui_dir.cmd
             artifact: Amenoma
-            upload: Armenoma.zip
+            upload: Amenoma.zip
           - cmd: build_ui_onefile.cmd
             artifact: Amenoma.exe
-            upload: Armenoma.exe
+            upload: Amenoma.exe
           - cmd: build_ui_dir_EN.cmd
             artifact: Amenoma_EN
-            upload: Armenoma_EN.zip
+            upload: Amenoma_EN.zip
           - cmd: build_ui_onefile_EN.cmd
             artifact: Amenoma_EN.exe
-            upload: Armenoma_EN.exe
+            upload: Amenoma_EN.exe
     name: Build ${{ matrix.artifact }}
     steps:
       - uses: actions/checkout@v2
