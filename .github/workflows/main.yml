@@ -1,0 +1,52 @@
+name: Build Test
+
+on: [ push, pull_request, workflow_dispatch ]
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix: 
+        include:
+          - cmd: build_ui_dir.cmd
+            artifact: Amenoma
+            upload: Amenoma.zip
+          - cmd: build_ui_onefile.cmd
+            artifact: Amenoma.exe
+            upload: Amenoma.exe
+          - cmd: build_ui_dir_EN.cmd
+            artifact: Amenoma_EN
+            upload: Amenoma_EN.zip
+          - cmd: build_ui_onefile_EN.cmd
+            artifact: Amenoma_EN.exe
+            upload: Amenoma_EN.exe
+    name: Build ${{ matrix.artifact }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Conda
+        uses: s-weigand/setup-conda@v1
+        with:
+            update-conda: true
+            python-version: 3.8
+            conda-channels: anaconda, conda-forge
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Shanghai"
+          timezoneMacos: "Asia/Shanghai"
+          timezoneWindows: "China Standard Time"
+      - name: Install Conda Environment
+        run: |
+            conda env update -f ./ArtScanner/Tools/model_trainer/dev_env.yml --name base
+            conda init powershell
+      - name: Versions
+        run: |
+          conda --version
+          python --version
+      - name: Build ${{ matrix.cmd }}
+        run: |
+            cd ArtScanner
+            ./${{ matrix.cmd }}
+      - name: Upload ${{ matrix.artifact }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.upload }}
+          path: ArtScanner/dist/${{ matrix.artifact }}
