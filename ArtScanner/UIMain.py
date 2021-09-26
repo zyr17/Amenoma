@@ -621,14 +621,14 @@ class Worker(QObject):
 
         def artscannerCallback(art_img, is_locked, click_lock):
             detectedInfo = self.model.detect_info(art_img)
-            self.log(f'名称{detectedInfo["name"]} 小锁{is_locked} 大锁{detectedInfo["lock"]}')
             detectedInfo['lock'] = is_locked
             artifact = artFilter(detectedInfo, art_img)
             if info['lockOperation'] == 'DataToGame':
                 if artifact and (artifactDB.dict[artifact].lock != is_locked):
                     click_lock()
             elif info['lockOperation'] == 'GameToData':
-                artifactDB.dict[artifact].lock = is_locked
+                if artifact:
+                    artifactDB.dict[artifact].lock = is_locked
             elif info['lockOperation'] == 'Unchanged':
                 pass
             else:
