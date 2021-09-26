@@ -259,10 +259,13 @@ class ArtDatabase:
         self.root = self.conn.root()
         self.root['size'] = 0
         self.dict = {}
-        if path[-5:] == '.json' and os.path.exists(path):
-            data = json.load(open(path, encoding='utf8'))
-            for d in data:
-                self.add(artifact = Artifact.from_json(d))
+        try:
+            if path[-5:] == '.json' and os.path.exists(path):
+                data = json.load(open(path, encoding='utf8'))
+                for d in data:
+                    self.add(artifact = Artifact.from_json(d))
+        except:
+            pass
 
     def __del__(self):
         self.db.close()

@@ -509,7 +509,9 @@ class Worker(QObject):
         export_name = ['artifacts.genshinart.json',
                        'artifacts.genmocalc.json',
                        'artifacts.GOOD.json',
-                       'artifacts.json']
+                       'cocogoat/artifacts.json']
+        if not os.path.exists('cocogoat'):
+            os.mkdir('cocogoat')
         artifactDB = ArtDatabase(export_name[-1])
         artScanner = ArtScannerLogic(self.game_info)
 
