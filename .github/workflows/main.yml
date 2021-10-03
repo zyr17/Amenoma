@@ -50,3 +50,13 @@ jobs:
         with:
           name: ${{ matrix.upload }}
           path: ArtScanner/dist/${{ matrix.artifact }}
+      - name: compress if is a folder
+        run: |
+            cd ArtScanner/dist
+            (Get-Item ./${{ matrix.artifact }}) -is [System.IO.DirectoryInfo] && Compress-Archive ${{ matrix.artifact }} ${{ matrix.upload }}
+      - name: Release
+        uses: fnkr/github-action-ghr@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GHR_PATH: ArtScanner/dist/${{ matrix.upload }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
