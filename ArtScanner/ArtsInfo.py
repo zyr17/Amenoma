@@ -101,6 +101,8 @@ ArtNames = [
     ["无垢之花", "贤医之羽", "停摆之刻", "超越之盏", "嗤笑之面"],
     ["明威之镡", "切落之羽", "雷云之笼", "绯花之壶", "华饰之兜"],   # 绝缘之旗印
     ["羁缠之花", "思忆之矢", "朝露之时", "祈望之心", "无常之面"],   # 追忆之注连
+    ['荣花之期', '华馆之羽', '众生之谣', '梦醒之瓢', '形骸之笠'],   # 华馆梦醒形骸记
+    ['海染之花', '渊宫之羽', '离别之贝', '真珠之笼', '海祇之冠'],   # 海染砗磲
 ]
 Users = [
     "空",
@@ -140,7 +142,66 @@ Users = [
     "枫原万叶",
     "宵宫",
     "早柚",
+    "埃洛伊",
+    "珊瑚宫心海",
+    "雷电将军",
+    "九条裟罗",
+    "早柚",
+    "宵宫",
+    "神里绫华",
+    "枫原万叶",
+    "托马",
+    "荒泷一斗",
+    "五郎",
 ]
+
+UsersCHS = {
+    "空": "Aether",
+    "荧": "Lumine",
+    "安柏": "Amber",
+    "凯亚": "Kaeya",
+    "丽莎": "Lisa",
+    "琴": "Jean",
+    "可莉": "Klee",
+    "诺艾尔": "Noelle",
+    "芭芭拉": "Barbara",
+    "温迪": "Venti",
+    "雷泽": "Razor",
+    "迪卢克": "Diluc",
+    "班尼特": "Bennett",
+    "菲谢尔": "Fischl",
+    "北斗": "Beidou",
+    "凝光": "Ningguang",
+    "香菱": "Xiangling",
+    "行秋": "Xingqiu",
+    "重云": "Chongyun",
+    "砂糖": "Sucrose",
+    "莫娜": "Mona",
+    "刻晴": "Keqing",
+    "七七": "Qiqi",
+    "达达利亚": "Tartaglia",
+    "迪奥娜": "Diona",
+    "钟离": "Zhongli",
+    "辛焱": "Xinyan",
+    "阿贝多": "Albedo",
+    "甘雨": "Ganyu",
+    "魈": "Xiao",
+    "胡桃": "HuTao",
+    "罗莎莉亚": "Rosaria",
+    "烟绯": "Yanfei",
+    "优菈": "Eula",
+    "埃洛伊": "Aloy",
+    "珊瑚宫心海": "SangonomiyaKokomi",
+    "雷电将军": "RaidenShogun",
+    "九条裟罗": "KujouSara",
+    "早柚": "Sayu",
+    "宵宫": "Yoimiya",
+    "神里绫华": "KamisatoAyaka",
+    "枫原万叶": "KaedeharaKazuha",
+    "托马": "Thoma",
+    "荒泷一斗": "AratakiItto",
+    "五郎": "Gorou"
+}
 
 TypeNamesGenshinArt = ["flower", "feather", "sand", "cup", "head"]
 AttrNamesGensinArt = {
@@ -201,6 +262,8 @@ SetNamesGenshinArt = [
     "paleFlame",                # 苍白之火
     "emblemOfSeveredFate",      # 绝缘之旗印
     "shimenawaReminiscence",    # 追忆之注连
+    "huskOfOpulentDreams",      # 华馆梦醒形骸记
+    "oceanHuedClam",            # 海染砗磲
 
 ]
 
@@ -264,6 +327,8 @@ SetNamesMingyuLab = [
     "pale_flame",                   # 苍白之火
     "seal_of_insulation",           # 绝缘之旗印
     "reminiscence_of_shime",        # 追忆之注连
+    "husk_of_opulent_dreams",       # 华馆梦醒形骸记
+    "divine_chorus",                # 海染砗磲
 ]
 
 TypeNamesGOOD = ['flower', 'plume', 'sands', 'goblet', 'circlet']
@@ -302,7 +367,8 @@ SetNamesGOOD = [
     'ResolutionOfSojourner', 'Scholar', 'TinyMiracle',
     'Adventurer', 'LuckyDog', 'TravelingDoctor',
     'TenacityOfTheMillelith', 'PaleFlame',
-    'EmblemOfSeveredFate', 'ShimenawasReminiscence'
+    'EmblemOfSeveredFate', 'ShimenawasReminiscence',
+    'HuskOfOpulentDreams', 'OceanHuedClam',
 ]
 
 MainAttrValue = {
@@ -546,7 +612,12 @@ ArtNames_EN = [
     ['Magnificent Tsuba', 'Sundered Feather', 'Storm Cage',
      'Scarlet Vessel', 'Ornate Kabuto'],
     ['Entangling Bloom', 'Shaft of Remembrance', "Morning Dew's Moment",
-     'Hopeful Heart', 'Capricious Visage']
+     'Hopeful Heart', 'Capricious Visage'],
+    ["Bloom Times", 'Plume of Luxury', 'Song of Life',
+     'Calabash of Awakening', 'Skeletal Hat'],      # Husk of Opulent Dreams
+    ['Sea-Dyed Blossom', "Deep Palace's Plume", 'Cowry of Parting',
+     'Pearl Cage', 'Crown of Watatsumi'],     # Ocean-Hued Clam
+    ['Sanctifying Unction', 'Sanctifying Essence']  # keep the two at last
 ]
 
 SetNames = [
@@ -585,6 +656,8 @@ SetNames = [
     "苍白之火",
     "绝缘之旗印",
     "追忆之注连",
+    "华馆梦醒形骸记",
+    "海染砗磲",
 ]
 
 Setnames_EN = ['Archaic Petra',
@@ -605,5 +678,6 @@ Setnames_EN = ['Archaic Petra',
                'Adventurer', 'Lucky Dog', 'Traveling Doctor',
                'Tenacity of the Millelith', 'Pale Flame',
                'Emblem of Severed Fate',
-               "Shimenawa's Reminiscence"]
+               "Shimenawa's Reminiscence",
+               'Husk of Opulent Dreams', 'Ocean-Hued Clam']
 

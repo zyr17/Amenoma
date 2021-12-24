@@ -422,7 +422,7 @@ class Worker(QObject):
             self.bundle_dir = sys.argv[1]
         else:
             self.bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
-        self.model = ocr_EN.OCR(model_weight=os.path.join(self.bundle_dir, 'weights-improvement-EN-81-1.00.hdf5'))
+        self.model = ocr_EN.OCR(model_weight=os.path.join(self.bundle_dir, 'weights_EN.hdf5'))
 
         self.log('Initialize is finished.')
         if self.isWindowCaptured:

@@ -16,3 +16,8 @@ ArtScanner/artifacts/**
 /ArtScanner/Tools/model_trainer/.ipynb_checkpoints/
 /ArtScanner/Tools/model_trainer/train/
 .idea/**
+
+/cocogoat/**
+artifacts*.json
+Amenoma.log
+cocogoat*.exe
