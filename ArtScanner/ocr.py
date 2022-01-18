@@ -1,4 +1,5 @@
 import os
+import sys
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -215,3 +216,16 @@ class OCR:
         # Define the model
         self.model = Model(inputs=[input_img], outputs=output, name="ocr_model_v1")
 
+if __name__ == '__main__':
+    imgfile = sys.argv[1]
+    imgfile = Image.open(imgfile).convert('RGB')
+    # import pdb
+    # pdb.set_trace()
+    try:
+        model = OCR(model_weight=os.path.join('ArtScanner', 'weights.hdf5'))
+    except:
+        model = OCR(model_weight='weights.hdf5')
+    model.setScaleRatio(0.53)
+    res = model.detect_info(imgfile)
+    import pdb
+    pdb.set_trace()

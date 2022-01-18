@@ -21,3 +21,4 @@ ArtScanner/artifacts/**
 artifacts*.json
 Amenoma.log
 cocogoat*.exe
+artifacts/**
