@@ -21,3 +21,4 @@ ArtScanner/artifacts/**
 artifacts*.json
 *.log
 cocogoat*.exe
+artifacts/**

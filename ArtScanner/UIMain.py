@@ -577,8 +577,12 @@ class Worker(QObject):
                 self.skipped += 1
                 status = 1
             else:
-                artifact = Artifact(detected_info, art_img)
-                result = artifactDB.add(artifact = artifact)
+                try:
+                    artifact = Artifact(detected_info, art_img)
+                    result = artifactDB.add(artifact = artifact)
+                except Exception:
+                    artifact = None
+                    result = None
                 if result == 'exist':
                     self.logger.info(f"[ArtifactDB] Existed Artifact."
                                      f" id: {self.art_id + 1} detected info: {detected_info}")
