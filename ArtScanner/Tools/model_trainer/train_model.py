@@ -1,6 +1,10 @@
 import json
+import os
+import pdb
 import sys
 import random as rd
+from matplotlib import pyplot as plt 
+import threading
 
 import numpy as np
 import tensorflow as tf
@@ -13,6 +17,8 @@ from tensorflow.keras.models import Model
 from tensorflow.strings import reduce_join
 
 from mobilenetv3 import MobileNetV3_Small
+
+DEBUG = False
 
 MainAttrDatabase = json.load(open('../ReliquaryLevelExcelConfigData.json'))
 SubAttrDatabase = json.load(open('../ReliquaryAffixExcelConfigData.json'))
@@ -246,6 +252,10 @@ def train_generator():
         for i in range(sub_attrs_num):
             info[f'subattr_{i + 1}'] = imgs[i + 5]
             expect_info[f'subattr_{i + 1}'] = info_train[i + 5]
+        if DEBUG and threading.current_thread() is threading.main_thread():
+            for key in info.keys():
+                plt.imshow(info[key])
+                plt.show()
         x = np.concatenate([preprocess(info[key]).T[None, :, :, None] for key in sorted(info.keys())], axis=0)
         f = [list(expect_info[key].ljust(15)) for key in sorted(expect_info.keys())]
         w = []
@@ -366,11 +376,32 @@ def detect_star(art_img):
     coef = coef / 1.30882352 + 0.21568627
     return int(round(coef))
 
+save_dir = "./train/"
 
-filepath = "./train/weights-improvement-{epoch:02d}-{ctc_accu:.2f}.hdf5"
+filepath = save_dir + "/weights-improvement-{epoch:02d}-{ctc_accu:.2f}.hdf5"
 checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath, monitor='ctc_accu', verbose=1, save_best_only=True,
                                                 mode='max')
 reduce = keras.callbacks.ReduceLROnPlateau(monitor='ctc_accu', factor=0.5, min_lr=1e-7, verbose=1, patience=3)
 callbacks_list = [reduce, checkpoint]
 
-history = model.fit(x=train_generator(), steps_per_epoch=512, epochs=168, callbacks=callbacks_list)
+epochs = 168
+load_epoch = -1
+if load_epoch == -1:
+    try:
+        load_target = ''
+        max_epoch = -1
+        for hdf5 in os.listdir(save_dir):
+            if hdf5[-5:] == '.hdf5':
+                epoch = int(hdf5.split('-')[2])
+                print(hdf5, epoch)
+                if max_epoch < epoch:
+                    max_epoch = epoch
+                    load_target = hdf5
+        model.load_weights(save_dir + '/' + load_target)
+        epochs -= max(max_epoch - 10, 0)
+    except Exception as e:
+        # raise e
+        pass
+
+
+history = model.fit(x=train_generator(), steps_per_epoch=512, epochs=epochs, callbacks=callbacks_list)
