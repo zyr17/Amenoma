@@ -558,7 +558,11 @@ class Worker(QObject):
 
         def artFilter(detected_info, art_img):
             artifact = None
-            autoCorrect(detected_info)
+            try:
+                autoCorrect(detected_info)
+            except Exception as e:
+                self.logger.exception(e)
+                self.logger.error('Artifact auto correct failed!')
 
             self.star_dist[detected_info['star'] - 1] += 1
             detectedLevel = utils.decodeValue(detected_info['level'])
@@ -626,7 +630,12 @@ class Worker(QObject):
         def artscannerCallback(art_img, is_locked, click_lock):
             detectedInfo = self.model.detect_info(art_img)
             detectedInfo['lock'] = is_locked
-            artifact = artFilter(detectedInfo, art_img)
+            artifact = None
+            try:
+                artifact = artFilter(detectedInfo, art_img)
+            except Exception as e:
+                self.logger.exception(e)
+                self.logger.error('artifact filter error')
             if info['lockOperation'] == 'DataToGame':
                 if artifact and (artifactDB.dict[artifact].lock != is_locked):
                     click_lock()

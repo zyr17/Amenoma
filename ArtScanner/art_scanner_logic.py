@@ -171,7 +171,7 @@ class ArtScannerLogic:
             self.game_info.scroll_fin_keypt_y + 1.5))
         if abs(pix.getpixel((0, 0))[0] - 233) > 5 or abs(pix.getpixel((0, 0))[1] - 229) > 5 or abs(
                 pix.getpixel((0, 0))[2] - 220) > 5:
-            for _ in range(3):
+            for _ in range(6):
                 mouse.wheel(1)
             time.sleep(0.1)
             self.scrollToRow(0)

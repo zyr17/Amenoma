@@ -225,7 +225,8 @@ if __name__ == '__main__':
         model = OCR(model_weight=os.path.join('ArtScanner', 'weights.hdf5'))
     except:
         model = OCR(model_weight='weights.hdf5')
-    model.setScaleRatio(0.53)
+    # model.setScaleRatio(0.75)  # 1080p
+    model.setScaleRatio(0.625)  # 900p
     res = model.detect_info(imgfile)
     import pdb
     pdb.set_trace()
